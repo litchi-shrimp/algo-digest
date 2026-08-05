@@ -216,7 +216,7 @@ $$L = L_{\text{BCE}} + \lambda \sum_{j \in \text{activated}} \frac{1}{n_j} \cdot
 
 ---
 
-### （2）改进评估指标AUC为GAUC
+### （3）改进评估指标AUC为GAUC
 
 在推荐领域经常会出现这样一种情况:离线模型AUC指标很好，但在线A/B测试并不理想。
 
