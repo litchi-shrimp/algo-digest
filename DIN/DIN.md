@@ -109,7 +109,7 @@ base就是将L个行为特征经过Sum Pooling，之后再和其他embedding con
 
 ### 当然代码中实际交互的细节是
 
-concat`[`u，t，u-t，u*t\`]` (u就是user behaviors，t就是target item)，
+`concat[u, t, u-t, u*t]`（u 就是 user behaviors，t 就是 target item），
 
 然后经过MLP+softmax得到L*1的注意力权重，之后加权得到最终的用户行为特征。
 
@@ -208,7 +208,7 @@ so整个Embedding矩阵（如1亿行，每行就是一个ID）中，只有几百
 1. **只计算被激活的 ID 行** 的 L2 范数（跳过梯度为 0 的绝大多数参数）
 2. **自适应惩罚力度**：高频 ID → 减小惩罚（已经学够了，别再过正则）；低频 ID → 增大惩罚（样本少，严防死记）
 
-$$L = L_{\text{BCE}} + \lambda \sum_{j \in \text{activated}} \frac{1}{n_j} \cdot W_j_2^2$$
+$$L = L_{\text{BCE}} + \lambda \sum_{j \in \text{activated}} \frac{1}{n_j} \cdot \|W_j\|_2^2$$
 
 其中 $n_j$ 是 ID j 的出现频次，$\frac{1}{n_j}$ 就是自适应惩罚因子——频次越高，惩罚越小。
 
@@ -224,7 +224,7 @@ $$L = L_{\text{BCE}} + \lambda \sum_{j \in \text{activated}} \frac{1}{n_j} \cdot
 
 AUC 衡量的是：随机抽一个正样本和一个负样本，模型给正样本打分 > 负样本打分的概率。
 
-$$AUC = P(\text{score}*{*正*} > \text{score}*{负})$$
+$$AUC = P(\text{score}_{正} > \text{score}_{负})$$
 
 可能比较拗口，如果不理解可以详细搜索，这里不赘述。
 
