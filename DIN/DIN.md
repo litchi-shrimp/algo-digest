@@ -131,7 +131,7 @@ u-t可以提现二者差异，u*t可提现二者交互，总之就是全面利�
 
 
 
-## 六、DIN 的其他工业界优化
+## 五、DIN 的其他工业界优化
 
 ### （1）改进激活函数PRELU，提出DICE
 
@@ -246,7 +246,7 @@ $$GAUC = \frac{\sum_{i=1}^{N} w_i \cdot AUC_i}{\sum_{i=1}^{N} w_i}$$
 
 
 
-## 九、总结 — 一张图串起来
+## 七、总结 — 一张图串起来
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -288,7 +288,7 @@ $$GAUC = \frac{\sum_{i=1}^{N} w_i \cdot AUC_i}{\sum_{i=1}^{N} w_i}$$
 
 
 
-## 十、推荐阅读 & 延伸
+## 八、推荐阅读 & 延伸
 
 - 📄 **原论文**：Zhou et al., *Deep Interest Network for Click-Through Rate Prediction*, KDD 2018
 - 🔗 **DIEN**（DIN 的升级版）：在 attention 基础上加 GRU 建模**兴趣演化**——不只关注什么，还关注兴趣如何随时间变化
