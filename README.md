@@ -26,7 +26,7 @@
 
 | 笔记                            | 核心内容                                                     | 状态 |
 | ----------------------------- | -------------------------------------------------------- | -- |
-| **[DIN（深度兴趣网络）](./DIN学习.md)** | Target Attention · Dice 激活 · Mini-batch Aware Reg · GAUC | ✅  |
+| **[DIN（深度兴趣网络）](./DIN/DIN学习.md)** | Target Attention · Dice 激活 · Mini-batch Aware Reg · GAUC | ✅  |
 
 > 🔜 计划中：DIEN、DSIN、Transformer 在推荐中的应用、多模态推荐、生成式推荐……
 
