@@ -34,7 +34,7 @@ $$
 - 稠密项（裁剪到 $[-0.10, 0.10]$）：
 
 $$
-r_{\text{dense}} = \operatorname{clip}\Big(-0.005 + F(s,s') + D(s),\ -0.10,\ 0.10\Big)
+r_{\text{dense}} = clip\Big(-0.005 + F(s,s') + D(s),\ -0.10,\ 0.10\Big)
 $$
 
 - 势能塑形（PBRS）：
