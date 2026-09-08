@@ -124,7 +124,7 @@ $$
 **(a) ε-greedy 选动作**
 
 $$
-a_t = \begin{cases} \text{随机动作} & \text{以概率 } \varepsilon \\ \operatorname*{argmax}_{a_t} Q(s_t, a_t; \theta) & \text{以概率 } 1-\varepsilon \end{cases}
+a_t = \begin{cases} \text{随机动作} & \text{以概率 } \varepsilon \\ \mathrm{argmax}_{a_t}\, Q(s_t, a_t; \theta) & \text{以概率 } 1-\varepsilon \end{cases}
 $$
 
 **(b) 执行动作、存储经验**
@@ -190,7 +190,7 @@ $$
 **解法（Double DQN）**：把"选动作"和"评估动作"拆开——当前网络 $\theta$ 负责选动作，目标网络 $\theta^-$ 负责打分：
 
 $$
-y_t = r_t + \gamma\, Q\bigl( s_{t+1},\ \operatorname*{argmax}_{a_{t+1}} Q(s_{t+1}, a_{t+1};\theta);\ \theta^- \bigr)
+y_t = r_t + \gamma\, Q\bigl( s_{t+1},\ \mathrm{argmax}_{a_{t+1}}\, Q(s_{t+1}, a_{t+1};\theta);\ \theta^- \bigr)
 $$
 
 选动作用 $\theta$（有噪声，但只负责"选哪个"），评估用 $\theta^-$（负责"打多少分"），两边噪声不完全同步，高估就被显著削弱。
