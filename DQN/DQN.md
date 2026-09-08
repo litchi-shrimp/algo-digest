@@ -12,15 +12,15 @@ Q-learning 的表格思路很对，但撞上了**状态爆炸**。DQN 的思路�
 
 ## 0. 先回顾 Q-learning 的 idea（几句话）
 
-Q-learning 想学一个函数 $Q(s,a)$："在状态 $s$ 下做动作 $a$，未来能拿多少回报"。
+Q-learning 想学一个函数 $Q(s_t,a_t)$："在状态 $s_t$ 下做动作 $a_t$，未来能拿多少回报"。
 
 更新方式就一句话（贝尔曼方程 + 时序差分）：
 
 $$
-Q(s,a) \leftarrow Q(s,a) + \alpha \Big[\, r + \gamma \max_{a'} Q(s',a') - Q(s,a) \Big]
+Q(s_t,a_t) \leftarrow Q(s_t,a_t) + \alpha \Bigl[ r_t + \gamma \max_{a_{t+1}} Q(s_{t+1},a_{t+1}) - Q(s_t,a_t) \Bigr]
 $$
 
-**人话**：用「当前奖励 $r$ + 下一状态的最大 Q 值」当作一个"更准的估计"，然后往它挪一小步（学习率 $\alpha$）。
+**人话**：用「当前奖励 $r_t$ + 下一状态的最大 Q 值」当作一个"更准的估计"，然后往它挪一小步（学习率 $\alpha$）。
 
 表格版 Q-learning 的致命前提：$Q$ 能存成一张**有限离散**的表。一遇到图像这种高维连续状态，表直接废掉。
 
@@ -28,7 +28,7 @@ $$
 
 ## 1. 从表格到神经网络
 
-自然的想法：用一个神经网络 $Q(s,a;\theta)$ 去"拟合"这张表，参数是 $\theta$。输入状态 $s$，输出每个动作的 Q 值。
+自然的想法：用一个神经网络 $Q(s_t,a_t;\theta)$ 去"拟合"这张表，参数是 $\theta$。输入状态 $s_t$，输出每个动作的 Q 值。
 
 这就是 DQN 的起点。但"换表为网络"不是白换的——它会埋下两个雷（见下文创新一）。
 
@@ -41,7 +41,7 @@ DQN 要做的，就是让 Q 网络去逼近**贝尔曼最优方程**。
 先把目标值（标签）写出来：
 
 $$
-y = r + \gamma \max_{a'} Q(s', a';\ \theta^-)
+y_t = r_t + \gamma \max_{a_{t+1}} Q(s_{t+1}, a_{t+1};\ \theta^-)
 $$
 
 其中 $\theta^-$ 是**目标网络**的参数（先记住它和 $\theta$ 不一样，后面细讲）。
@@ -49,22 +49,22 @@ $$
 损失函数（均方误差）：
 
 $$
-L(\theta) = \mathbb{E}\Big[\, \big( y - Q(s,a;\theta) \big)^2 \Big]
+L(\theta) = \mathbb{E}\Bigl[ \bigl( y_t - Q(s_t,a_t;\theta) \bigr)^2 \Bigr]
 $$
 
 展开：
 
 $$
-L(\theta) = \mathbb{E}\Big[\, \big( r + \gamma \max_{a'} Q(s',a';\theta^-) - Q(s,a;\theta) \big)^2 \Big]
+L(\theta) = \mathbb{E}\Bigl[ \bigl( r_t + \gamma \max_{a_{t+1}} Q(s_{t+1},a_{t+1};\theta^-) - Q(s_t,a_t;\theta) \bigr)^2 \Bigr]
 $$
 
-对 $\theta$ 求梯度。注意 $y$ 里的 $\theta^-$ 是固定的（不参与求导），梯度只作用在 $Q(s,a;\theta)$ 这一项上：
+对 $\theta$ 求梯度。注意 $y_t$ 里的 $\theta^-$ 是固定的（不参与求导），梯度只作用在 $Q(s_t,a_t;\theta)$ 这一项上：
 
 $$
-\nabla_\theta L(\theta) = \mathbb{E}\Big[\, 2\big( Q(s,a;\theta) - y \big) \cdot \nabla_\theta Q(s,a;\theta) \Big]
+\nabla_\theta L(\theta) = \mathbb{E}\Bigl[ 2\bigl( Q(s_t,a_t;\theta) - y_t \bigr) \cdot \nabla_\theta Q(s_t,a_t;\theta) \Bigr]
 $$
 
-这就是一个普通的回归梯度——把 $y$ 当"常数标签"看。
+这就是一个普通的回归梯度——把 $y_t$ 当"常数标签"看。
 
 参数更新：
 
@@ -86,13 +86,13 @@ $$
 
 **问题 2：移动靶（目标非平稳，Q 发散）**
 
-看标签 $y = r + \gamma\max Q(s',a';\theta)$。这个"标签" $y$ 本身是用 Q 网络算出来的，而 Q 网络**正在被更新**。于是：你每更新一步 $\theta$，标签 $y$ 也跟着变——像在追一个一直移动的靶子，容易震荡甚至发散。
+看标签 $y_t = r_t + \gamma \max_{a_{t+1}} Q(s_{t+1},a_{t+1};\theta)$。这个"标签" $y_t$ 本身是用 Q 网络算出来的，而 Q 网络**正在被更新**。于是：你每更新一步 $\theta$，标签 $y_t$ 也跟着变——像在追一个一直移动的靶子，容易震荡甚至发散。
 
 > 这两个问题，分别由创新二、创新三来治。
 
 ### 创新二：经验回放（Experience Replay）
 
-**做法**：把每一步的 $(s, a, r, s', \text{done})$ 存进一个回放缓冲区 $D$（比如存最近 100 万条）。训练时**随机采样**一个 mini-batch 来更新，而不是按时间顺序喂。
+**做法**：把每一步的 $(s_t, a_t, r_t, s_{t+1}, \text{done})$ 存进一个回放缓冲区 $D$（比如存最近 100 万条）。训练时**随机采样**一个 mini-batch 来更新，而不是按时间顺序喂。
 
 **为什么能治问题 1**：
 
@@ -101,11 +101,11 @@ $$
 
 ### 创新三：目标网络（Target Network）
 
-**做法**：额外维护一个"目标网络" $Q(\cdot;\theta^-)$，专门用来算标签里的 $\max Q(s',a';\theta^-)$。$\theta^-$ 不随训练实时更新，而是每隔 $C$ 步把 $\theta$ 整个复制过去（$\theta^- \leftarrow \theta$）。
+**做法**：额外维护一个"目标网络" $Q(\cdot;\theta^-)$，专门用来算标签里的 $\max_{a_{t+1}} Q(s_{t+1},a_{t+1};\theta^-)$。$\theta^-$ 不随训练实时更新，而是每隔 $C$ 步把 $\theta$ 整个复制过去（$\theta^- \leftarrow \theta$）。
 
 **为什么能治问题 2**：
 
-- 两次复制之间，$\theta^-$ 固定不动 → 标签 $y$ 在一段时间内是"静止的靶"；
+- 两次复制之间，$\theta^-$ 固定不动 → 标签 $y_t$ 在一段时间内是"静止的靶"；
 - 目标稳定了，Q 网络才能安稳地朝它逼近，而不是自己追自己。
 
 ---
@@ -124,7 +124,7 @@ $$
 **(a) ε-greedy 选动作**
 
 $$
-a_t = \begin{cases} \text{随机动作} & \text{以概率 } \varepsilon \\ \operatorname*{argmax}_a Q(s_t, a; \theta) & \text{以概率 } 1-\varepsilon \end{cases}
+a_t = \begin{cases} \text{随机动作} & \text{以概率 } \varepsilon \\ \operatorname*{argmax}_{a_t} Q(s_t, a_t; \theta) & \text{以概率 } 1-\varepsilon \end{cases}
 $$
 
 **(b) 执行动作、存储经验**
@@ -132,21 +132,21 @@ $$
 执行 $a_t$，观测奖励 $r_t$ 和下一状态 $s_{t+1}$，把一条经验存入缓冲区：
 
 $$
-D \leftarrow D \cup \big\{ (s_t, a_t, r_t, s_{t+1}, \text{done}) \big\}
+D \leftarrow D \cup \bigl\{ (s_t, a_t, r_t, s_{t+1}, \text{done}) \bigr\}
 $$
 
 **(c) 随机采样、计算目标值**
 
-从 $D$ 随机采样一个 mini-batch $\{(s_j, a_j, r_j, s'_j)\}$，对每个样本算目标 $y_j$：
+从 $D$ 随机采样一个 mini-batch $\{(s_j, a_j, r_j, s_{j+1})\}$，对每个样本算目标 $y_j$：
 
 $$
-y_j = \begin{cases} r_j & \text{若 } s'_j \text{ 是终止态} \\ r_j + \gamma \max_{a'} Q(s'_j, a';\ \theta^-) & \text{否则} \end{cases}
+y_j = \begin{cases} r_j & \text{若 } s_{j+1} \text{ 是终止态} \\ r_j + \gamma \max_{a_{j+1}} Q(s_{j+1}, a_{j+1};\ \theta^-) & \text{否则} \end{cases}
 $$
 
 **(d) 梯度下降更新 Q 网络**
 
 $$
-L(\theta) = \frac{1}{m}\sum_{j=1}^{m} \big( y_j - Q(s_j, a_j;\theta) \big)^2
+L(\theta) = \frac{1}{m}\sum_{j=1}^{m} \bigl( y_j - Q(s_j, a_j;\theta) \bigr)^2
 $$
 
 $$
@@ -170,17 +170,17 @@ $$
 目标值里有个 $\max$：
 
 $$
-y = r + \gamma \max_{a'} Q(s', a';\ \theta^-)
+y_t = r_t + \gamma \max_{a_{t+1}} Q(s_{t+1}, a_{t+1};\ \theta^-)
 $$
 
 这个 $\max$ 看着无辜，其实是"系统性高估"的元凶。
 
-**直觉**：$Q(s',a')$ 是估计值，带着噪声。假设某状态下所有动作的真实 Q 值都差不多（比如都是 10），但估计值有的偏上（10.5）有的偏下（9.5）。$\max$ 操作会**专门挑那个偏上的**，于是目标 $y$ 就被系统性抬高了。
+**直觉**：$Q(s_{t+1},a_{t+1})$ 是估计值，带着噪声。假设某状态下所有动作的真实 Q 值都差不多（比如都是 10），但估计值有的偏上（10.5）有的偏下（9.5）。$\max$ 操作会**专门挑那个偏上的**，于是目标 $y_t$ 就被系统性抬高了。
 
 **公式角度（Jensen 不等式）**：
 
 $$
-\mathbb{E}\big[ \max_a Q(s',a) \big] \;\ge\; \max_a \mathbb{E}\big[ Q(s',a) \big] = \max_a Q^*(s',a)
+\mathbb{E}\bigl[ \max_{a_{t+1}} Q(s_{t+1},a_{t+1}) \bigr] \;\ge\; \max_{a_{t+1}} \mathbb{E}\bigl[ Q(s_{t+1},a_{t+1}) \bigr] = \max_{a_{t+1}} Q^*(s_{t+1},a_{t+1})
 $$
 
 左边是"期望的 max"，右边是"max 的期望"。DQN 实际算的是左边（对带噪声的估计取 max），右边才是真实最优——所以取 $\max$ 必然高估。
@@ -190,7 +190,7 @@ $$
 **解法（Double DQN）**：把"选动作"和"评估动作"拆开——当前网络 $\theta$ 负责选动作，目标网络 $\theta^-$ 负责打分：
 
 $$
-y = r + \gamma\, Q\big( s',\ \operatorname*{argmax}_a Q(s',a;\theta);\ \theta^- \big)
+y_t = r_t + \gamma\, Q\bigl( s_{t+1},\ \operatorname*{argmax}_{a_{t+1}} Q(s_{t+1}, a_{t+1};\theta);\ \theta^- \bigr)
 $$
 
 选动作用 $\theta$（有噪声，但只负责"选哪个"），评估用 $\theta^-$（负责"打多少分"），两边噪声不完全同步，高估就被显著削弱。
@@ -199,22 +199,22 @@ $$
 
 ### 问题 2：为什么要奖励裁剪（reward clipping）
 
-DQN 原文把奖励硬裁到 $[-1, +1]$，即 $r \in \{-1, 0, +1\}$。为什么？
+DQN 原文把奖励硬裁到 $[-1, +1]$，即 $r_t \in \{-1, 0, +1\}$。为什么？
 
 **从损失和梯度看**：
 
 $$
-L(\theta) = \big( y - Q(s,a;\theta) \big)^2 ,\qquad \nabla_\theta L = 2\big(Q(s,a;\theta) - y\big)\, \nabla_\theta Q(s,a;\theta)
+L(\theta) = \bigl( y_t - Q(s_t,a_t;\theta) \bigr)^2 ,\qquad \nabla_\theta L = 2\bigl(Q(s_t,a_t;\theta) - y_t\bigr)\, \nabla_\theta Q(s_t,a_t;\theta)
 $$
 
-其中 $y = r + \gamma\max Q$ 里藏着 $r$。如果 $r$ 的尺度很大（有的游戏吃个豆 +10，有的 +10000），那么：
+其中 $y_t = r_t + \gamma \max_{a_{t+1}} Q(s_{t+1},a_{t+1};\theta^-)$ 里藏着 $r_t$。如果 $r_t$ 的尺度很大（有的游戏吃个豆 +10，有的 +10000），那么：
 
-- TD 误差 $(Q - y)$ 的尺度跟着 $r$ 走，差别巨大；
+- TD 误差 $(Q(s_t,a_t;\theta) - y_t)$ 的尺度跟着 $r_t$ 走，差别巨大；
 - 梯度 $\nabla_\theta L$ 的尺度也跟着差巨大。
 
 **问题**：要训练几十个游戏，奖励尺度天差地别，用同一个学习率 $\eta$，就会出现"这个游戏梯度爆炸、那个游戏梯度小得动不了"，根本没法统一训。
 
-**奖励裁剪的解法**：把 $r$ 统一裁到 $[-1,1]$，等于抹掉"奖励大小"、只留"好/坏/中性"的符号。于是：
+**奖励裁剪的解法**：把 $r_t$ 统一裁到 $[-1,1]$，等于抹掉"奖励大小"、只留"好/坏/中性"的符号。于是：
 
 - 所有游戏的 TD 误差尺度被拉齐；
 - 梯度幅度稳定，一套超参通吃所有游戏。
