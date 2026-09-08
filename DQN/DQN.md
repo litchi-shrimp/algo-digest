@@ -124,7 +124,7 @@ $$
 **(a) ε-greedy 选动作**
 
 $$
-a_t = \begin{cases} \text{随机动作} & \text{以概率 } \varepsilon \\[2pt] \arg\max_a Q(s_t, a; \theta) & \text{以概率 } 1-\varepsilon \end{cases}
+a_t = \begin{cases} \text{随机动作} & \text{以概率 } \varepsilon \\ \operatorname*{argmax}_a Q(s_t, a; \theta) & \text{以概率 } 1-\varepsilon \end{cases}
 $$
 
 **(b) 执行动作、存储经验**
@@ -140,7 +140,7 @@ $$
 从 $D$ 随机采样一个 mini-batch $\{(s_j, a_j, r_j, s'_j)\}$，对每个样本算目标 $y_j$：
 
 $$
-y_j = \begin{cases} r_j & \text{若 } s'_j \text{ 是终止态} \\[2pt] r_j + \gamma \max_{a'} Q(s'_j, a';\ \theta^-) & \text{否则} \end{cases}
+y_j = \begin{cases} r_j & \text{若 } s'_j \text{ 是终止态} \\ r_j + \gamma \max_{a'} Q(s'_j, a';\ \theta^-) & \text{否则} \end{cases}
 $$
 
 **(d) 梯度下降更新 Q 网络**
@@ -190,7 +190,7 @@ $$
 **解法（Double DQN）**：把"选动作"和"评估动作"拆开——当前网络 $\theta$ 负责选动作，目标网络 $\theta^-$ 负责打分：
 
 $$
-y = r + \gamma\, Q\big( s',\ \arg\max_a Q(s',a;\theta);\ \theta^- \big)
+y = r + \gamma\, Q\big( s',\ \operatorname*{argmax}_a Q(s',a;\theta);\ \theta^- \big)
 $$
 
 选动作用 $\theta$（有噪声，但只负责"选哪个"），评估用 $\theta^-$（负责"打多少分"），两边噪声不完全同步，高估就被显著削弱。
