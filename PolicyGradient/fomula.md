@@ -1,6 +1,6 @@
 # 🎯 策略梯度定理（Policy Gradient）推导 — 强化学习学习笔记
 
-> **一句话总结**：DQN系列只能给离散动作"打分"，遇到连续动作就无解，所以需要让网络学习动作的策略分布 $\pi_(theta)$ ，根据分布随机采样连续动作；但若要学习更新这个策略，则需要对策略分布求梯度；而这条梯度之所以严格成立，靠 log 技巧把算不出的环境项梯度消掉，最后只剩可计算的 $\nabla\log\pi(a\mid s)\times$ $R(*)$。
+> **一句话总结**：DQN系列只能给离散动作"打分"，遇到连续动作就无解，所以需要让网络学习动作的策略分布 $\pi_\theta$ ，根据分布随机采样连续动作；但若要学习更新这个策略，则需要对策略分布求梯度；而这条梯度之所以严格成立，靠 log 技巧把算不出的环境项梯度消掉，最后只剩可计算的 $\nabla\log\pi(a\mid s)\times$ $R(\tau)$。
 
 ## 先说说：这篇推导在强化学习地图里的位置 🗺️
 
@@ -36,12 +36,12 @@ $$
 \begin{aligned}
 \nabla J(\theta)
 &= \int R(\tau)\, \nabla p(\tau \mid \theta)\, d\tau \\
-&= \int R(\tau)\, \nabla p(\tau \mid \theta)\, \dfrac{p(\tau \mid \theta)}{p(\tau \mid \theta)}\, d\tau 🔴\\
+&= \int R(\tau)\, \nabla p(\tau \mid \theta)\, \dfrac{p(\tau \mid \theta)}{p(\tau \mid \theta)}\, d\tau \quad \text{🔴}\\
 &= \int p(\tau \mid \theta)\, R(\tau)\, \dfrac{\nabla p(\tau \mid \theta)}{p(\tau \mid \theta)}\, d\tau \\
-&= \int p(\tau \mid \theta)\, R(\tau)\, \nabla \log p(\tau \mid \theta)\, d\tau 🔵\\
+&= \int p(\tau \mid \theta)\, R(\tau)\, \nabla \log p(\tau \mid \theta)\, d\tau \quad \text{🔵}\\
 &= \mathbb{E}_{\tau \sim p(\tau \mid \theta)} \big[ R(\tau)\, \nabla \log p(\tau \mid \theta) \big] \\
 &= \mathbb{E}_{\tau \sim p(\tau \mid \theta)} \left[ R(\tau)\, \nabla \Big( \log \mu(s_0) + \sum_{t=0}^{T-1} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T-1} \log p(s_{t+1} \mid s_t,\, a_t) \Big) \right] \\
-&= \mathbb{E}_{\tau \sim p(\tau \mid \theta)} \left[ R(\tau) \cdot \sum_{t=0}^{T-1} \nabla \log \pi_\theta(a_t \mid s_t) \right]🟢
+&= \mathbb{E}_{\tau \sim p(\tau \mid \theta)} \left[ R(\tau) \cdot \sum_{t=0}^{T-1} \nabla \log \pi_\theta(a_t \mid s_t) \right] \quad \text{🟢}
 \end{aligned}
 $$
 
