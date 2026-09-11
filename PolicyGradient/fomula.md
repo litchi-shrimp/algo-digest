@@ -32,6 +32,7 @@ $$
 J(\theta)=\mathbb{E}_{\tau \sim P(\tau \mid \theta)} \big[ R(\tau) \big]=\int R(\tau)\, P(\tau \mid \theta)\, d\tau \\
 P(\tau \mid \theta) = \mu(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t \mid s_t)\, P(s_{t+1} \mid s_t,\, a_t) \\
 $$
+
 $$
 \begin{aligned}
 \nabla J(\theta)
@@ -45,19 +46,18 @@ $$
 \end{aligned}
 $$
 
+第一次看晕了很正常，下面一步步拆,看看具体是如何一步步消除**环境转移项** **$P(s_{t+1} \mid s_t, a_t)$**
 
-第一次看晕了很正常，下面一步步拆,看看具体是如何一步步消除**环境转移项 $P(s_{t+1} \mid s_t, a_t)$**
-
----
+***
 
 ## 一、核心符号
 
-| 符号 | 含义 |
-| :--- | :--- |
-| $\tau$ | **轨迹**：一局游戏从开始到结束的完整过程，即 $s_0, a_0, r_0, s_1, a_1, r_1, \dots$ |
-| $R(\tau)$ | **总回报**：一条轨迹 $\tau$ 的总得分（累计奖励），是环境给的分数，**不含参数 $\theta$**（求导时当常数看） |
-| $P(\tau \mid \theta)$ | 在当前策略 $\pi_\theta$ 下，走出这条轨迹 $\tau$ 的**概率** |
-| $\nabla J(\theta)$ | **梯度**：目标函数 $J(\theta)$ 的优化方向，用**梯度上升**更新参数 $\theta$ |
+| 符号                    | 含义                                                                    |
+| :-------------------- | :-------------------------------------------------------------------- |
+| $\tau$                | **轨迹**：一局游戏从开始到结束的完整过程，即 $s_0, a_0, r_0, s_1, a_1, r_1, \dots$        |
+| $R(\tau)$             | **总回报**：一条轨迹 $\tau$ 的总得分（累计奖励），是环境给的分数，**不含参数** **$\theta$**（求导时当常数看） |
+| $P(\tau \mid \theta)$ | 在当前策略 $\pi_\theta$ 下，走出这条轨迹 $\tau$ 的**概率**                            |
+| $\nabla J(\theta)$    | **梯度**：目标函数 $J(\theta)$ 的优化方向，用**梯度上升**更新参数 $\theta$                  |
 
 各符号的具体形式如下。
 
@@ -79,7 +79,7 @@ $$
 P(\tau \mid \theta) = \mu(s_0) \prod_{t=0}^{T-1} \pi_\theta(a_t \mid s_t)\, P(s_{t+1} \mid s_t,\, a_t)
 $$
 
----
+***
 
 ## 二、目标函数与梯度
 
@@ -89,7 +89,7 @@ $$
 J(\theta) = \mathbb{E}_{\tau \sim P(\tau \mid \theta)} \big[ R(\tau) \big] = \int R(\tau)\, P(\tau \mid \theta)\, d\tau
 $$
 
-为了优化 $J(\theta)$，对其求梯度。注意 $R(\tau)$ 是环境给的回报，**不含 $\theta$**，求导时是常数：
+为了优化 $J(\theta)$，对其求梯度。注意 $R(\tau)$ 是环境给的回报，**不含** **$\theta$**，求导时是常数：
 
 $$
 \begin{aligned}
@@ -101,7 +101,7 @@ $$
 
 但直接计算 $\nabla P(\tau \mid \theta)$ 会卡住：$P(\tau \mid \theta)$ 里含环境转移项 $P(s_{t+1} \mid s_t, a_t)$，它是环境模型给出的概率，我们并不知晓，却会出现在梯度里，造成"死锁"。所以下一步要把它消掉。
 
----
+***
 
 ## 三、🔴 为什么要构造 $\dfrac{P(\tau \mid \theta)}{P(\tau \mid \theta)}$
 
@@ -136,7 +136,7 @@ $$
 
 这样被积函数就变成了「概率密度 $P(\tau \mid \theta)$」 × 「$R(\tau)\, \dfrac{\nabla p}{p}$」，恰好是期望形式。
 
----
+***
 
 ## 四、🔵 对数微分技巧（log-derivative trick）
 
@@ -173,7 +173,7 @@ $$
 \end{aligned}
 $$
 
----
+***
 
 ## 五、🟢 消去环境转移项
 
@@ -189,7 +189,7 @@ $$
 
 注意：$\log \mu(s_0)$ 和 $\log P(s_{t+1} \mid s_t, a_t)$ 都不含参数 $\theta$，对 $\theta$ 求导后为 $0$，被自然消去——环境模型项就这样被"对数微分技巧"消掉了。**这就是当初非要用 log 不可的原因：把连乘变连加，环境项才能以"加法里的一项"身份单独被扔掉。**
 
----
+***
 
 ## 六、最终结果
 
@@ -205,11 +205,11 @@ $$
 
 其中期望 $\mathbb{E}$ 在代码中只需通过大量采样（模拟）来近似（大数定律）。
 
----
+***
 
 ## 七、代码实现
 
-在代码中，只需得到每个 episode 中每一步的 $\log \pi_\theta(a_t \mid s_t)$（即 log_prob）：
+在代码中，只需得到每个 episode 中每一步的 $\log \pi_\theta(a_t \mid s_t)$（即 log\_prob）：
 
 ```python
 losses_per_episode = - rewards * batch_log_probs   # 负号：用梯度下降来实现梯度上升
@@ -218,7 +218,7 @@ final_loss.backward()
 optimizer.steP()
 ```
 
----
+***
 
 ## 延伸阅读 & 下一步
 
@@ -226,6 +226,7 @@ optimizer.steP()
 - 再用神经网络去估计这个 baseline，就是 **Actor-Critic**，一路演进到 **PPO**
 - 📄 经典原文：Williams, *Simple Statistical Gradient-Following Algorithms for Connectionist Reinforcement Learning*（REINFORCE）
 
----
+***
 
 > 📌 本文为个人学习笔记，如有疏漏欢迎指正。
+
