@@ -36,6 +36,7 @@
 | ----------------------------- | -------------------------------------------------------- | -- |
 | **[DQN（深度 Q 网络）](./DQN/DQN.md)** | Q-learning → DQN · 经验回放 · 目标网络 · Q 高估 · 奖励裁剪 | ✅  |
 | **[策略梯度定理](./PolicyGradient/fomula.md)** | Policy Gradient 推导 · log-derivative trick · 消环境项 | ✅  |
+| **[PPO算法（1）](./PPO/fomula_1.md)** | PPO算法（1） | ✅  |
 
 > 🔜 计划中：Double/Dueling DQN、Actor-Critic、PPO……
 
