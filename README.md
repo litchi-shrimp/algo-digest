@@ -38,6 +38,7 @@
 | **[策略梯度定理](./PolicyGradient/fomula.md)** | Policy Gradient 推导 · log-derivative trick · 消环境项 | ✅  |
 | **[PPO算法（1）](./PPO/fomula_1.md)** | PPO算法（1） | ✅  |
 | **[PPO算法（2）](./PPO/fomula_2.md)** | PPO算法（2） | ✅  | |
+| **[PPO算法（完结）](./PPO/fomula_3.md)** | PPO算法（完结） | ✅  | |
 
 
 
