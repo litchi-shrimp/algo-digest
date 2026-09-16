@@ -42,7 +42,9 @@
 
 
 
-> 🔜 计划中：Double/Dueling DQN、Actor-Critic、PPO……
+> 🔜 计划中：GRPO、SAC、TD3……
+
+
 
 ### 项目
 
